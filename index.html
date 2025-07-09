@@ -10,18 +10,26 @@
 <body>
   <div class="container py-5">
     <div class="card p-4 shadow-sm">
-      <h2 class="text-center mb-4">📅 Date-Based ToDo List</h2>
+      <h2 class="text-center mb-4">📅 To-Do List</h2>
       <div class="row g-3 align-items-center mb-4">
-        <div class="col-sm-6">
-          <input type="text" id="task-input-single" class="form-control" placeholder="Add a new task">
-        </div>
+
         <div class="col-sm-3">
           <input type="date" id="date-input-single" class="form-control">
         </div>
+
+        <div class="col-sm-6">
+          <input type="text" id="task-input-single" class="form-control" placeholder="Add a new task">
+        </div>
+
         <div class="col-sm-3 d-grid">
           <button id="add-task-single" class="btn btn-primary">Add Task</button>
         </div>
+
       </div>
+      <div class="mb-3">
+        <input type="text" id="search-task" class="form-control" placeholder="🔍 Search task...">
+      </div>
+
       <ul id="task-list" class="list-group mb-3"></ul>
       <nav>
         <ul class="pagination justify-content-center" id="pagination"></ul>

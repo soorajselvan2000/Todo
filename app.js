@@ -1,182 +1,162 @@
-// ✅ Cleaned & Working app.js for Date-based Task Storage with Single Input Panel
-
 document.addEventListener('DOMContentLoaded', function () {
-    const addTaskBtn = document.getElementById('add-task-single');
-    const taskInput = document.getElementById('task-input-single');
-    const dateInput = document.getElementById('date-input-single');
-    const taskList = document.getElementById('task-list');
-    const pagination = document.getElementById('pagination');
+  const inputSingle = document.getElementById('task-input-single');
+  const dateInputSingle = document.getElementById('date-input-single');
+  const addTaskBtn = document.getElementById('add-task-single');
+  const taskList = document.getElementById('task-list');
+  const pagination = document.getElementById('pagination');
+  const searchInput = document.getElementById('search-task');
 
-    const TASKS_PER_PAGE = 3;
-    let currentPage = 1;
-    let tasksByDate = JSON.parse(localStorage.getItem('tasksByDate')) || {};
+  const TASKS_PER_PAGE = 5;
+  let currentPage = 1;
 
-    const confirmModal = document.getElementById('customConfirmModal');
-    const bsModal = new bootstrap.Modal(confirmModal);
-    let pendingDeleteItem = null;
+  let tasksByDate = JSON.parse(localStorage.getItem('tasksByDate')) || {};
+  let pendingDeleteItem = null;
+  const confirmModal = new bootstrap.Modal(document.getElementById('customConfirmModal'));
 
-    function saveTasks() {
-        localStorage.setItem('tasksByDate', JSON.stringify(tasksByDate));
-    }
+  function saveTasks() {
+    localStorage.setItem('tasksByDate', JSON.stringify(tasksByDate));
+  }
 
-    function createTaskElement(taskText, index, date) {
-        const listItem = document.createElement('li');
-        listItem.className = 'list-group-item d-flex align-items-center justify-content-between';
+  function createTaskElement(taskText, index, date) {
+    const li = document.createElement('li');
+    li.className = 'list-group-item d-flex justify-content-between align-items-center';
 
-        const span = document.createElement('span');
-        span.innerHTML = `<strong>${taskText}</strong><br><small class="text-muted">${date}</small>`;
-        span.className = 'flex-grow-1';
+    const span = document.createElement('span');
+    span.innerHTML = `<strong>${taskText}</strong><br><small class="text-muted">${date}</small>`;
+    span.className = 'flex-grow-1';
 
-        const strikeBtn = document.createElement('button');
-        strikeBtn.className = 'btn btn-outline-secondary btn-sm me-2';
-        strikeBtn.textContent = '✔';
+    const completeBtn = document.createElement('button');
+    completeBtn.className = 'btn btn-sm btn-outline-success me-2';
+    completeBtn.textContent = '✔';
 
-        const editBtn = document.createElement('button');
-        editBtn.className = 'btn btn-outline-primary btn-sm me-2';
-        editBtn.textContent = 'Edit';
+    const editBtn = document.createElement('button');
+    editBtn.className = 'btn btn-sm btn-outline-primary me-2';
+    editBtn.textContent = 'Edit';
 
-        const deleteBtn = document.createElement('button');
-        deleteBtn.className = 'btn btn-outline-danger btn-sm';
-        deleteBtn.textContent = '🗑️';
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'btn btn-sm btn-outline-danger';
+    deleteBtn.textContent = '🗑️';
 
-        strikeBtn.addEventListener('click', function () {
-            listItem.classList.toggle('completed');
-            tasksByDate[date][index].completed = listItem.classList.contains('completed');
-            saveTasks();
-        });
-
-        editBtn.addEventListener('click', function () {
-            if (listItem.classList.contains('completed')) return;
-
-            const input = document.createElement('input');
-            input.type = 'text';
-            input.value = taskText;
-            input.className = 'form-control form-control-sm';
-            input.style.maxWidth = '70%';
-
-            span.replaceWith(input);
-            input.focus();
-
-            function saveEdit() {
-                const newText = input.value.trim();
-                if (newText) {
-                    tasksByDate[date][index].text = newText;
-                    saveTasks();
-                    renderTasks(date);
-                }
-            }
-
-            input.addEventListener('keydown', function (e) {
-                if (e.key === 'Enter') saveEdit();
-            });
-            input.addEventListener('blur', saveEdit);
-        });
-
-        deleteBtn.addEventListener('click', function () {
-            pendingDeleteItem = { index, date };
-            bsModal.show();
-        });
-
-        listItem.appendChild(span);
-        listItem.appendChild(strikeBtn);
-        listItem.appendChild(editBtn);
-        listItem.appendChild(deleteBtn);
-
-        return listItem;
-    }
-
-    function renderTasks(date) {
-        taskList.innerHTML = '';
-        if (!date || !tasksByDate[date]) return;
-
-        const taskArray = tasksByDate[date];
-        const start = (currentPage - 1) * TASKS_PER_PAGE;
-        const end = start + TASKS_PER_PAGE;
-
-        taskArray.slice(start, end).forEach((task, idx) => {
-            const listItem = createTaskElement(task.text, idx, date);
-            if (task.completed) listItem.classList.add('completed');
-            taskList.appendChild(listItem);
-        });
-
-        renderPagination(taskArray.length);
-    }
-
-    function renderPagination(totalCount) {
-        pagination.innerHTML = '';
-        const pageCount = Math.ceil(totalCount / TASKS_PER_PAGE);
-        if (pageCount <= 1) return;
-
-        const prev = document.createElement('li');
-        prev.className = `page-item${currentPage === 1 ? ' disabled' : ''}`;
-        prev.innerHTML = `<a class="page-link" href="#">«</a>`;
-        prev.onclick = function (e) {
-            e.preventDefault();
-            if (currentPage > 1) {
-                currentPage--;
-                renderTasks(dateInput.value);
-            }
-        };
-        pagination.appendChild(prev);
-
-        for (let i = 1; i <= pageCount; i++) {
-            const li = document.createElement('li');
-            li.className = `page-item${i === currentPage ? ' active' : ''}`;
-            li.innerHTML = `<a class="page-link" href="#">${i}</a>`;
-            li.onclick = function (e) {
-                e.preventDefault();
-                currentPage = i;
-                renderTasks(dateInput.value);
-            };
-            pagination.appendChild(li);
-        }
-
-        const next = document.createElement('li');
-        next.className = `page-item${currentPage === pageCount ? ' disabled' : ''}`;
-        next.innerHTML = `<a class="page-link" href="#">»</a>`;
-        next.onclick = function (e) {
-            e.preventDefault();
-            if (currentPage < pageCount) {
-                currentPage++;
-                renderTasks(dateInput.value);
-            }
-        };
-        pagination.appendChild(next);
-    }
-
-    function addTask() {
-        const taskText = taskInput.value.trim();
-        const taskDate = dateInput.value;
-
-        if (taskText && taskDate) {
-            if (!tasksByDate[taskDate]) tasksByDate[taskDate] = [];
-            tasksByDate[taskDate].push({ text: taskText, completed: false });
-            taskInput.value = '';
-            saveTasks();
-            renderTasks(taskDate);
-        }
-    }
-
-    addTaskBtn.addEventListener('click', addTask);
-    taskInput.addEventListener('keydown', function (e) {
-        if (e.key === 'Enter') addTask();
-    });
-    dateInput.addEventListener('change', function () {
-        currentPage = 1;
-        renderTasks(dateInput.value);
+    completeBtn.addEventListener('click', function () {
+      li.classList.toggle('completed');
+      tasksByDate[date][index].completed = li.classList.contains('completed');
+      saveTasks();
     });
 
-    document.querySelector('.beautiful-confirm').addEventListener('click', function () {
-        if (pendingDeleteItem) {
-            const { index, date } = pendingDeleteItem;
-            tasksByDate[date].splice(index, 1);
-            if (tasksByDate[date].length === 0) delete tasksByDate[date];
+    editBtn.addEventListener('click', function () {
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.value = taskText;
+      input.className = 'form-control form-control-sm';
+
+      span.replaceWith(input);
+      input.focus();
+
+      input.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
+          const newText = input.value.trim();
+          if (newText) {
+            tasksByDate[date][index].text = newText;
             saveTasks();
             renderTasks(date);
-            pendingDeleteItem = null;
+          }
         }
-        bsModal.hide();
+      });
+
+      input.addEventListener('blur', function () {
+        renderTasks(date);
+      });
     });
 
-    if (dateInput.value) renderTasks(dateInput.value);
+    deleteBtn.addEventListener('click', function () {
+      pendingDeleteItem = { index, date };
+      confirmModal.show();
+    });
+
+    li.appendChild(span);
+    li.appendChild(completeBtn);
+    li.appendChild(editBtn);
+    li.appendChild(deleteBtn);
+
+    if (tasksByDate[date][index].completed) {
+      li.classList.add('completed');
+    }
+
+    return li;
+  }
+
+  function renderTasks(date) {
+    taskList.innerHTML = '';
+    if (!tasksByDate[date]) return;
+
+    const searchValue = searchInput.value.trim().toLowerCase();
+    const filtered = tasksByDate[date].filter(task => task.text.toLowerCase().includes(searchValue));
+
+    const start = (currentPage - 1) * TASKS_PER_PAGE;
+    const paginated = filtered.slice(start, start + TASKS_PER_PAGE);
+
+    paginated.forEach((task, index) => {
+      const li = createTaskElement(task.text, tasksByDate[date].indexOf(task), date);
+      taskList.appendChild(li);
+    });
+
+    renderPagination(filtered.length);
+  }
+
+  function renderPagination(count) {
+    pagination.innerHTML = '';
+    const pages = Math.ceil(count / TASKS_PER_PAGE);
+    if (pages <= 1) return;
+
+    for (let i = 1; i <= pages; i++) {
+      const li = document.createElement('li');
+      li.className = `page-item ${i === currentPage ? 'active' : ''}`;
+      li.innerHTML = `<a href="#" class="page-link">${i}</a>`;
+      li.addEventListener('click', function (e) {
+        e.preventDefault();
+        currentPage = i;
+        renderTasks(dateInputSingle.value);
+      });
+      pagination.appendChild(li);
+    }
+  }
+
+  function addTask() {
+    const text = inputSingle.value.trim();
+    const date = dateInputSingle.value;
+
+    if (text && date) {
+      if (!tasksByDate[date]) tasksByDate[date] = [];
+      tasksByDate[date].push({ text, completed: false });
+      saveTasks();
+      inputSingle.value = '';
+      renderTasks(date);
+    }
+  }
+
+  addTaskBtn.addEventListener('click', addTask);
+  inputSingle.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') addTask();
+  });
+
+  dateInputSingle.addEventListener('change', function () {
+    currentPage = 1;
+    renderTasks(dateInputSingle.value);
+  });
+
+  searchInput.addEventListener('input', function () {
+    currentPage = 1;
+    renderTasks(dateInputSingle.value);
+  });
+
+  document.querySelector('.beautiful-confirm').addEventListener('click', function () {
+    const { index, date } = pendingDeleteItem;
+    tasksByDate[date].splice(index, 1);
+    if (tasksByDate[date].length === 0) delete tasksByDate[date];
+    saveTasks();
+    renderTasks(date);
+    confirmModal.hide();
+  });
+
+  renderTasks(dateInputSingle.value);
 });
