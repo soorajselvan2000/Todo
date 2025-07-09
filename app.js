@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', function () {
   const taskList = document.getElementById('task-list');
   const pagination = document.getElementById('pagination');
   const searchInput = document.getElementById('search-task');
+  const filterSelect = document.getElementById('filter-tasks');
 
   const TASKS_PER_PAGE = 5;
   let currentPage = 1;
@@ -90,7 +91,16 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!tasksByDate[date]) return;
 
     const searchValue = searchInput.value.trim().toLowerCase();
-    const filtered = tasksByDate[date].filter(task => task.text.toLowerCase().includes(searchValue));
+
+    const statusFilter = filterSelect.value;
+    const filtered = tasksByDate[date].filter(task => {
+    const matchesSearch = task.text.toLowerCase().includes(searchValue);
+    const matchesStatus =
+        statusFilter === 'all' ||
+        (statusFilter === 'completed' && task.completed) ||
+        (statusFilter === 'pending' && !task.completed);
+    return matchesSearch && matchesStatus;
+    });
 
     const start = (currentPage - 1) * TASKS_PER_PAGE;
     const paginated = filtered.slice(start, start + TASKS_PER_PAGE);
@@ -148,6 +158,12 @@ document.addEventListener('DOMContentLoaded', function () {
     currentPage = 1;
     renderTasks(dateInputSingle.value);
   });
+
+  filterSelect.addEventListener('change', function () {
+    currentPage = 1;
+    renderTasks(dateInputSingle.value);
+  });
+
 
   document.querySelector('.beautiful-confirm').addEventListener('click', function () {
     const { index, date } = pendingDeleteItem;
