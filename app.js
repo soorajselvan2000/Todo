@@ -14,6 +14,17 @@ document.addEventListener('DOMContentLoaded', function () {
   let pendingDeleteItem = null;
   const confirmModal = new bootstrap.Modal(document.getElementById('customConfirmModal'));
 
+  function showToast(message, type = 'primary') {
+  const toastEl = document.getElementById('toast-message');
+  const toastBody = document.getElementById('toast-body');
+  
+  toastEl.className = `toast align-items-center text-bg-${type} border-0`;
+  toastBody.textContent = message;
+
+  const bsToast = new bootstrap.Toast(toastEl);
+  bsToast.show();
+}
+
   function saveTasks() {
     localStorage.setItem('tasksByDate', JSON.stringify(tasksByDate));
   }
@@ -190,6 +201,7 @@ document.addEventListener('DOMContentLoaded', function () {
       if (!tasksByDate[date]) tasksByDate[date] = [];
       tasksByDate[date].push({ text, completed: false });
       saveTasks();
+      showToast('Task added successfully!', 'success');
       inputSingle.value = '';
       renderTasks(date);
     }
@@ -230,6 +242,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (tasksByDate[date].length === 0) delete tasksByDate[date];
     saveTasks();
     renderTasks(date);
+    showToast('Task deleted!', 'danger');
     confirmModal.hide();
   });
 
