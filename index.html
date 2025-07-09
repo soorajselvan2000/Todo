@@ -25,6 +25,20 @@
           <button id="add-task-single" class="btn btn-primary">Add Task</button>
         </div>
 
+        <div class="dropdown mt-3">
+        <button class="btn btn-primary dropdown-toggle w-100" type="button" id="exportDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+          Export Tasks
+        </button>
+        <ul class="dropdown-menu w-100" aria-labelledby="exportDropdown">
+          <li><a class="dropdown-item dropdown-item-dark export-option" data-type="json" href="#">Export as JSON</a></li>
+          <li><a class="dropdown-item export-option" data-type="txt" href="#">Export as Plain Text</a></li>
+          <li><a class="dropdown-item export-option" data-type="csv" href="#">Export as CSV</a></li>
+          <li><a class="dropdown-item export-option" data-type="sql" href="#">Export as SQL</a></li>
+          <li><a class="dropdown-item export-option" data-type="pdf" href="#">Export as PDF</a></li>
+        </ul>
+      </div>
+
+
       </div>
 
       <div class="input-group mb-3">

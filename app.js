@@ -131,6 +131,57 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
+    function downloadFile(content, fileName, type) {
+    const blob = new Blob([content], { type });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = fileName;
+    a.click();
+    }
+
+    function exportTasks(format) {
+        const date = dateInputSingle.value;
+        if (!tasksByDate[date]) return;
+
+            const tasks = tasksByDate[date];
+            let content = '';
+            let fileName = `tasks_${date}`;
+            let mimeType = 'text/plain';
+
+        switch (format) {
+            case 'json':
+            content = JSON.stringify(tasks, null, 2);
+            fileName += '.json';
+            mimeType = 'application/json';
+            break;
+            case 'txt':
+            content = tasks.map(t => `- ${t.text} [${t.completed ? '✔' : '❌'}]`).join('\n');
+            fileName += '.txt';
+            break;
+            case 'csv':
+            content = "Task,Completed\n" + tasks.map(t => `"${t.text}",${t.completed}`).join('\n');
+            fileName += '.csv';
+            mimeType = 'text/csv';
+            break;
+            case 'sql':
+            content = tasks.map((t, i) =>
+                `INSERT INTO todos (id, task, completed, date) VALUES (${i + 1}, '${t.text.replace(/'/g, "''")}', ${t.completed ? 1 : 0}, '${date}');`
+            ).join('\n');
+            fileName += '.sql';
+            mimeType = 'text/sql';
+            break;
+            case 'pdf':
+            const win = window.open('', '_blank');
+            win.document.write(`<pre>${tasks.map(t => `• ${t.text} [${t.completed ? '✔' : '❌'}]`).join('\n')}</pre>`);
+            win.document.close();
+            win.print();
+            return;
+        }
+
+        downloadFile(content, fileName, mimeType);
+    }
+
+
   function addTask() {
     const text = inputSingle.value.trim();
     const date = dateInputSingle.value;
@@ -163,6 +214,14 @@ document.addEventListener('DOMContentLoaded', function () {
     currentPage = 1;
     renderTasks(dateInputSingle.value);
   });
+
+    document.querySelectorAll('.export-option').forEach(item => {
+    item.addEventListener('click', function (e) {
+        e.preventDefault();
+        exportTasks(this.getAttribute('data-type'));
+    });
+    });
+
 
 
   document.querySelector('.beautiful-confirm').addEventListener('click', function () {
